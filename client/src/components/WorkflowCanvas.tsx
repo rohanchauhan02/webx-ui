@@ -38,6 +38,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { nodeCategories } from '@/lib/utils';
+import { BaseEdge, EdgeProps, getSmoothStepPath } from 'reactflow';
 
 interface NodeData {
   label: string;
@@ -47,6 +48,58 @@ interface NodeData {
   color: string;
   config: Record<string, any>;
 }
+
+// Custom edge component that shows a highlighted style when selected
+const CustomEdge = ({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  style = {},
+  markerEnd,
+  selected,
+}: EdgeProps) => {
+  // Get path for the edge
+  const [edgePath, labelX, labelY] = getSmoothStepPath({
+    sourceX,
+    sourceY,
+    sourcePosition,
+    targetX,
+    targetY,
+    targetPosition,
+  });
+
+  // Set a thicker and highlighted style when selected
+  const edgeStyle = {
+    strokeWidth: selected ? 3 : 2,
+    stroke: selected ? '#4F46E5' : (style?.stroke as string) || '#718096',
+    transition: 'stroke-width 0.2s, stroke 0.2s',
+  };
+
+  // Adjust marker style if selected
+  let customMarkerEnd = markerEnd;
+  if (selected && markerEnd && typeof markerEnd === 'object') {
+    // Create a new marker with the selected color
+    customMarkerEnd = {
+      type: markerEnd.type,
+      width: markerEnd.width,
+      height: markerEnd.height,
+      color: '#4F46E5',
+    };
+  }
+
+  return (
+    <BaseEdge
+      path={edgePath}
+      markerEnd={customMarkerEnd}
+      style={edgeStyle}
+      id={id}
+    />
+  );
+};
 
 const nodeTypes = {
   custom: ({ data }: { data: NodeData }) => {
@@ -77,6 +130,11 @@ const nodeTypes = {
       </div>
     );
   },
+};
+
+// Map of edge types
+const edgeTypes = {
+  custom: CustomEdge,
 };
 
 interface WorkflowCanvasProps {
@@ -258,14 +316,19 @@ const WorkflowCanvas = ({
         onNodeClick={(_, node) => handleNodeClick(node)}
         onPaneClick={() => {
           setSelectedNode(null);
+          setSelectedEdge(null);
+          setEdgeMenuPosition(null);
           onPaneClick();
         }}
+        onEdgeClick={handleEdgeClick}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onEdgeUpdate={onEdgeUpdate}
         onEdgeUpdateStart={onEdgeUpdateStart}
         onEdgeUpdateEnd={onEdgeUpdateEnd}
         fitView
         defaultEdgeOptions={{
+          type: 'custom',
           style: { strokeWidth: 2, stroke: '#718096' },
           markerEnd: {
             type: MarkerType.ArrowClosed,
@@ -385,6 +448,61 @@ const WorkflowCanvas = ({
             )}
           </div>
         </Panel>
+        {/* Edge Context Menu for adding nodes in between */}
+        {selectedEdge && edgeMenuPosition && (
+          <div 
+            className="absolute bg-white shadow-lg rounded-lg p-4 z-10 w-72"
+            style={{ 
+              left: edgeMenuPosition.x, 
+              top: edgeMenuPosition.y,
+              transform: 'translate(-50%, -50%)'
+            }}
+          >
+            <div className="text-sm font-medium mb-2 text-gray-700">
+              Add Node Between Connection
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-3">
+              {nodeCategories
+                .flatMap(category => category.items)
+                .filter(item => item.type !== "Triggers") // No trigger nodes in the middle
+                .slice(0, 8) // Limit to 8 options for simplicity
+                .map(item => (
+                  <div 
+                    key={item.name}
+                    className="flex items-center cursor-pointer px-2 py-1.5 rounded-md hover:bg-gray-100"
+                    onClick={() => handleAddNodeBetween(item)}
+                  >
+                    <div className={cn("w-6 h-6 rounded-md flex items-center justify-center mr-2", 
+                      item.color === 'blue' ? 'bg-blue-100 text-blue-600' :
+                      item.color === 'orange' ? 'bg-orange-100 text-orange-600' :
+                      item.color === 'purple' ? 'bg-purple-100 text-purple-600' :
+                      item.color === 'green' ? 'bg-green-100 text-green-600' :
+                      item.color === 'yellow' ? 'bg-yellow-100 text-yellow-600' :
+                      'bg-gray-100 text-gray-600'
+                    )}>
+                      <i className={item.icon} style={{ fontSize: '12px' }}></i>
+                    </div>
+                    <span className="text-xs font-medium whitespace-nowrap overflow-hidden text-ellipsis">
+                      {item.name}
+                    </span>
+                  </div>
+                ))
+              }
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="w-full mt-2 text-xs"
+              onClick={() => {
+                setSelectedEdge(null);
+                setEdgeMenuPosition(null);
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        )}
+        
         <Controls />
         <Background gap={20} size={1} color="#CBD5E0" />
       </ReactFlow>
