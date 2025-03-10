@@ -77,8 +77,10 @@ const CustomEdge = ({
   // Set a thicker and highlighted style when selected
   const edgeStyle = {
     strokeWidth: selected ? 3 : 2,
-    stroke: selected ? '#4F46E5' : (style?.stroke as string) || '#718096',
-    transition: 'stroke-width 0.2s, stroke 0.2s',
+    stroke: selected ? '#4F46E5' : (style?.stroke as string) || '#94A3B8',
+    opacity: 0.8,
+    transition: 'all 0.2s ease',
+    filter: selected ? 'drop-shadow(0 0 3px rgba(79, 70, 229, 0.3))' : 'none',
   };
 
   // Adjust marker style if selected
@@ -121,34 +123,34 @@ const nodeTypes = {
     };
 
     return (
-      <div className="px-4 py-3 rounded-lg bg-white border border-gray-200 shadow-sm w-52 relative group">
+      <div className="px-4 py-4 rounded-lg bg-white border border-gray-200 shadow-md w-56 relative group hover:shadow-lg transition-all duration-200">
         {/* Input handle on the left */}
         <Handle
           type="target"
           position={Position.Left}
-          className="w-3 h-3 bg-gray-300 opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ zIndex: 20 }}
+          className="w-3 h-3 bg-blue-400 border-2 border-white opacity-0 group-hover:opacity-100 transition-opacity"
+          style={{ zIndex: 20, left: -1.5 }}
         />
         
         {/* Output handle on the right */}
         <Handle
           type="source"
           position={Position.Right}
-          className="w-3 h-3 bg-gray-300 opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ zIndex: 20 }}
+          className="w-3 h-3 bg-blue-400 border-2 border-white opacity-0 group-hover:opacity-100 transition-opacity"
+          style={{ zIndex: 20, right: -1.5 }}
         />
         
-        <div className="flex items-center mb-2">
-          <div className={cn("w-8 h-8 rounded-md flex items-center justify-center mr-2", getColorClass(data.color))}>
-            <i className={data.icon}></i>
+        <div className="flex items-center mb-3">
+          <div className={cn("w-10 h-10 rounded-md flex items-center justify-center mr-3 shadow-sm", getColorClass(data.color))}>
+            <i className={data.icon} style={{ fontSize: '1.25rem' }}></i>
           </div>
-          <div className="text-sm font-medium overflow-hidden text-ellipsis">
+          <div className="text-sm font-medium leading-tight overflow-hidden text-ellipsis flex-1">
             {data.label}
           </div>
         </div>
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>{data.type}</span>
-          <span>v1.0</span>
+        <div className="flex justify-between items-center pt-2 border-t text-xs text-gray-500">
+          <span className="bg-gray-100 px-2 py-0.5 rounded-full">{data.type}</span>
+          <span className="font-mono text-[10px] text-gray-400">v1.0</span>
         </div>
       </div>
     );
@@ -352,12 +354,17 @@ const WorkflowCanvas = ({
         fitView
         defaultEdgeOptions={{
           type: 'custom',
-          style: { strokeWidth: 2, stroke: '#718096' },
+          style: { 
+            strokeWidth: 2, 
+            stroke: '#94A3B8',
+            opacity: 0.8,
+            transition: 'all 0.2s ease',
+          },
           markerEnd: {
             type: MarkerType.ArrowClosed,
             width: 15,
             height: 15,
-            color: '#718096',
+            color: '#94A3B8',
           },
           animated: true,
         }}
@@ -368,9 +375,10 @@ const WorkflowCanvas = ({
             <DropdownMenuTrigger asChild>
               <Button 
                 size="icon" 
-                className="rounded-full shadow-lg h-14 w-14 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all duration-300 transform hover:scale-105"
+                className="rounded-full shadow-lg h-14 w-14 bg-gradient-to-tr from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all duration-300 transform hover:scale-105 border-2 border-white/70"
               >
-                <Plus className="h-6 w-6 text-white" />
+                <div className="absolute inset-0 rounded-full bg-white/10 backdrop-blur-[1px]"></div>
+                <Plus className="h-6 w-6 text-white relative z-10" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64 p-2 max-h-[70vh] overflow-y-auto">
