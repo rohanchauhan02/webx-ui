@@ -550,35 +550,35 @@ const NodePanel = ({ selectedNode, onNodeSelect, onNodeUpdate }: NodePanelProps)
         // Trigger nodes
         case 'schedule': return renderScheduleConfig();
         case 'webhook': return renderWebhookConfig();
-        case 'manual': return renderManualTriggerConfig ? renderManualTriggerConfig() : defaultConfigMessage();
-        case 'api': return renderApiTriggerConfig ? renderApiTriggerConfig() : defaultConfigMessage();
+        case 'manual': return renderManualTriggerConfig();
+        case 'api': return renderApiTriggerConfig();
         
         // Logic nodes
         case 'condition': return renderConditionConfig();
-        case 'switch': return renderSwitchConfig ? renderSwitchConfig() : defaultConfigMessage();
+        case 'switch': return defaultConfigMessage();
         case 'loop': return renderLoopConfig();
-        case 'delay': return renderDelayConfig ? renderDelayConfig() : defaultConfigMessage();
+        case 'delay': return defaultConfigMessage();
         
         // API & Data nodes
-        case 'api_call': return renderApiCallConfig ? renderApiCallConfig() : defaultConfigMessage();
-        case 'transform': return renderTransformConfig ? renderTransformConfig() : defaultConfigMessage();
-        case 'json': return renderJsonConfig ? renderJsonConfig() : defaultConfigMessage();
+        case 'api_call': return renderApiCallConfig();
+        case 'transform': return defaultConfigMessage();
+        case 'json': return defaultConfigMessage();
         case 'database': return renderDatabaseConfig();
         
         // Communication nodes
         case 'email': return renderEmailConfig();
         case 'slack': return renderSlackConfig();
-        case 'telegram': return renderTelegramConfig ? renderTelegramConfig() : defaultConfigMessage();
+        case 'telegram': return renderTelegramConfig();
         
         // Project Management nodes
-        case 'github': return renderGithubConfig ? renderGithubConfig() : defaultConfigMessage();
-        case 'jira': return renderJiraConfig ? renderJiraConfig() : defaultConfigMessage();
-        case 'trello': return renderTrelloConfig ? renderTrelloConfig() : defaultConfigMessage();
+        case 'github': return renderGithubConfig();
+        case 'jira': return renderJiraConfig();
+        case 'trello': return defaultConfigMessage();
         
         // Cloud Service nodes
-        case 's3': return renderS3Config ? renderS3Config() : defaultConfigMessage();
-        case 'google_sheets': return renderGoogleSheetsConfig ? renderGoogleSheetsConfig() : defaultConfigMessage();
-        case 'stripe': return renderStripeConfig ? renderStripeConfig() : defaultConfigMessage();
+        case 's3': return defaultConfigMessage();
+        case 'google_sheets': return renderGoogleSheetsConfig();
+        case 'stripe': return defaultConfigMessage();
         
         default: return defaultConfigMessage();
       }
@@ -667,6 +667,346 @@ const NodePanel = ({ selectedNode, onNodeSelect, onNodeUpdate }: NodePanelProps)
     );
   };
   
+  // GitHub integration node
+  const renderGithubConfig = () => {
+    const config = selectedNode?.data.config || {};
+    
+    return (
+      <>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="operation">GitHub Operation</Label>
+            <Select 
+              value={config.operation || "create_issue"} 
+              onValueChange={(value) => handleConfigChange("operation", value)}
+            >
+              <SelectTrigger id="operation">
+                <SelectValue placeholder="Select operation" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="create_issue">Create Issue</SelectItem>
+                <SelectItem value="update_issue">Update Issue</SelectItem>
+                <SelectItem value="create_pr">Create Pull Request</SelectItem>
+                <SelectItem value="merge_pr">Merge Pull Request</SelectItem>
+                <SelectItem value="add_comment">Add Comment</SelectItem>
+                <SelectItem value="list_issues">List Issues</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="repository">Repository</Label>
+            <Input 
+              id="repository" 
+              value={config.repository || ""} 
+              onChange={(e) => handleConfigChange("repository", e.target.value)}
+              placeholder="username/repository"
+            />
+          </div>
+          
+          {(config.operation === "create_issue" || config.operation === "update_issue") && (
+            <>
+              <div>
+                <Label htmlFor="title">Title</Label>
+                <Input 
+                  id="title" 
+                  value={config.title || ""} 
+                  onChange={(e) => handleConfigChange("title", e.target.value)}
+                  placeholder="Issue title"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="body">Description</Label>
+                <Textarea 
+                  id="body" 
+                  value={config.body || ""} 
+                  onChange={(e) => handleConfigChange("body", e.target.value)}
+                  placeholder="Issue description..."
+                  className="h-24"
+                />
+                <p className="text-xs text-gray-500 mt-1">Markdown supported. Use {{ }} for dynamic values</p>
+              </div>
+              
+              <div>
+                <Label htmlFor="labels">Labels</Label>
+                <Input 
+                  id="labels" 
+                  value={config.labels || ""} 
+                  onChange={(e) => handleConfigChange("labels", e.target.value)}
+                  placeholder="bug, enhancement, etc. (comma separated)"
+                />
+              </div>
+            </>
+          )}
+          
+          {config.operation === "update_issue" && (
+            <div>
+              <Label htmlFor="issueNumber">Issue Number</Label>
+              <Input 
+                id="issueNumber" 
+                type="number"
+                value={config.issueNumber || ""} 
+                onChange={(e) => handleConfigChange("issueNumber", Number(e.target.value))}
+                placeholder="123"
+              />
+            </div>
+          )}
+          
+          <div className="mt-2 p-2 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800">
+            <p>GitHub integration requires authentication.</p>
+            <p className="text-xs mt-1">
+              <span className="font-semibold">TODO:</span> Backend integration needed for GitHub API calls.
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  };
+  
+  // Jira integration node
+  const renderJiraConfig = () => {
+    const config = selectedNode?.data.config || {};
+    
+    return (
+      <>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="operation">Jira Operation</Label>
+            <Select 
+              value={config.operation || "create_issue"} 
+              onValueChange={(value) => handleConfigChange("operation", value)}
+            >
+              <SelectTrigger id="operation">
+                <SelectValue placeholder="Select operation" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="create_issue">Create Issue</SelectItem>
+                <SelectItem value="update_issue">Update Issue</SelectItem>
+                <SelectItem value="transition_issue">Transition Issue</SelectItem>
+                <SelectItem value="add_comment">Add Comment</SelectItem>
+                <SelectItem value="search_issues">Search Issues</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="domain">Jira Domain</Label>
+            <Input 
+              id="domain" 
+              value={config.domain || ""} 
+              onChange={(e) => handleConfigChange("domain", e.target.value)}
+              placeholder="company.atlassian.net"
+            />
+          </div>
+          
+          {(config.operation === "create_issue") && (
+            <>
+              <div>
+                <Label htmlFor="projectKey">Project Key</Label>
+                <Input 
+                  id="projectKey" 
+                  value={config.projectKey || ""} 
+                  onChange={(e) => handleConfigChange("projectKey", e.target.value)}
+                  placeholder="KEY"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="issueType">Issue Type</Label>
+                <Select 
+                  value={config.issueType || "Task"} 
+                  onValueChange={(value) => handleConfigChange("issueType", value)}
+                >
+                  <SelectTrigger id="issueType">
+                    <SelectValue placeholder="Select issue type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Bug">Bug</SelectItem>
+                    <SelectItem value="Task">Task</SelectItem>
+                    <SelectItem value="Story">Story</SelectItem>
+                    <SelectItem value="Epic">Epic</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="summary">Summary</Label>
+                <Input 
+                  id="summary" 
+                  value={config.summary || ""} 
+                  onChange={(e) => handleConfigChange("summary", e.target.value)}
+                  placeholder="Issue summary"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea 
+                  id="description" 
+                  value={config.description || ""} 
+                  onChange={(e) => handleConfigChange("description", e.target.value)}
+                  placeholder="Issue description..."
+                  className="h-24"
+                />
+              </div>
+            </>
+          )}
+          
+          {(config.operation === "update_issue" || config.operation === "transition_issue" || config.operation === "add_comment") && (
+            <div>
+              <Label htmlFor="issueKey">Issue Key</Label>
+              <Input 
+                id="issueKey" 
+                value={config.issueKey || ""} 
+                onChange={(e) => handleConfigChange("issueKey", e.target.value)}
+                placeholder="KEY-123"
+              />
+            </div>
+          )}
+          
+          <div className="mt-2 p-2 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800">
+            <p>Jira integration requires authentication.</p>
+            <p className="text-xs mt-1">
+              <span className="font-semibold">TODO:</span> Backend integration needed for Jira API calls.
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  };
+  
+  // Telegram integration node
+  const renderTelegramConfig = () => {
+    const config = selectedNode?.data.config || {};
+    
+    return (
+      <>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="chatId">Chat ID</Label>
+            <Input 
+              id="chatId" 
+              value={config.chatId || ""} 
+              onChange={(e) => handleConfigChange("chatId", e.target.value)}
+              placeholder="Chat ID or @username"
+            />
+            <p className="text-xs text-gray-500 mt-1">Group ID, Channel ID, or @username</p>
+          </div>
+          
+          <div>
+            <Label htmlFor="message">Message</Label>
+            <Textarea 
+              id="message" 
+              value={config.message || ""} 
+              onChange={(e) => handleConfigChange("message", e.target.value)}
+              placeholder="Message text..."
+              className="h-24"
+            />
+            <p className="text-xs text-gray-500 mt-1">Markdown supported. Use {{ }} for dynamic values</p>
+          </div>
+          
+          <div>
+            <Label htmlFor="parseMode">Parse Mode</Label>
+            <Select 
+              value={config.parseMode || "Markdown"} 
+              onValueChange={(value) => handleConfigChange("parseMode", value)}
+            >
+              <SelectTrigger id="parseMode">
+                <SelectValue placeholder="Select parse mode" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Markdown">Markdown</SelectItem>
+                <SelectItem value="HTML">HTML</SelectItem>
+                <SelectItem value="None">None</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="mt-2 p-2 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800">
+            <p>Telegram integration requires a bot token.</p>
+            <p className="text-xs mt-1">
+              <span className="font-semibold">TODO:</span> Backend integration needed for Telegram Bot API.
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  };
+  
+  // Google Sheets integration node
+  const renderGoogleSheetsConfig = () => {
+    const config = selectedNode?.data.config || {};
+    
+    return (
+      <>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="operation">Operation</Label>
+            <Select 
+              value={config.operation || "read"} 
+              onValueChange={(value) => handleConfigChange("operation", value)}
+            >
+              <SelectTrigger id="operation">
+                <SelectValue placeholder="Select operation" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="read">Read Sheet</SelectItem>
+                <SelectItem value="append">Append Row</SelectItem>
+                <SelectItem value="update">Update Cell</SelectItem>
+                <SelectItem value="create">Create Sheet</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="spreadsheetId">Spreadsheet ID</Label>
+            <Input 
+              id="spreadsheetId" 
+              value={config.spreadsheetId || ""} 
+              onChange={(e) => handleConfigChange("spreadsheetId", e.target.value)}
+              placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+            />
+            <p className="text-xs text-gray-500 mt-1">ID from Google Sheets URL</p>
+          </div>
+          
+          <div>
+            <Label htmlFor="sheetName">Sheet Name</Label>
+            <Input 
+              id="sheetName" 
+              value={config.sheetName || "Sheet1"} 
+              onChange={(e) => handleConfigChange("sheetName", e.target.value)}
+              placeholder="Sheet1"
+            />
+          </div>
+          
+          {config.operation === "append" && (
+            <div>
+              <Label htmlFor="values">Values</Label>
+              <Textarea 
+                id="values" 
+                value={config.values || "{{ data.values }}"}
+                onChange={(e) => handleConfigChange("values", e.target.value)}
+                placeholder="JSON array or {{ data.values }}"
+                className="h-20"
+              />
+              <p className="text-xs text-gray-500 mt-1">Array of values or dynamic reference</p>
+            </div>
+          )}
+          
+          <div className="mt-2 p-2 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800">
+            <p>Google Sheets integration requires OAuth authentication.</p>
+            <p className="text-xs mt-1">
+              <span className="font-semibold">TODO:</span> Backend integration needed for Google Sheets API.
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  };
+  
+  // Add other node config renders (e.g., S3, Stripe) as needed
+
   return (
     <div className="w-64 bg-white border-l border-gray-200 overflow-y-auto flex flex-col h-full">
       {selectedNode ? renderNodeConfig() : renderNodeLibrary()}
