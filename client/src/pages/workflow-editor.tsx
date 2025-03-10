@@ -10,6 +10,9 @@ import WorkflowCanvas from '@/components/WorkflowCanvas';
 import NodePanel from '@/components/NodePanel';
 import RecommendationModal from '@/components/RecommendationModal';
 import { generateNodeId, nodeCategories } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Activity, BookOpen, GitFork, Code, LucideIcon, Settings } from 'lucide-react';
 
 const WorkflowEditor = () => {
   const params = useParams<{ id: string }>();
@@ -220,6 +223,8 @@ const WorkflowEditor = () => {
     );
   }
   
+  const [activeTab, setActiveTab] = useState("canvas");
+
   return (
     <div className="flex flex-col h-full">
       <WorkflowToolbar 
@@ -231,26 +236,152 @@ const WorkflowEditor = () => {
         onRun={handleRunWorkflow}
       />
       
-      <div className="flex-1 flex overflow-hidden">
-        <ReactFlowProvider>
-          <WorkflowCanvas
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onNodeClick={onNodeClick}
-            onPaneClick={() => setSelectedNode(null)}
-            onDragOver={onDragOver}
-            onDrop={onDrop}
-          />
-          <NodePanel
-            selectedNode={selectedNode}
-            onNodeSelect={setSelectedNode}
-            onNodeUpdate={onNodeUpdate}
-          />
-        </ReactFlowProvider>
-      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+        <div className="border-b px-4">
+          <TabsList className="h-12">
+            <TabsTrigger value="canvas" className="flex items-center gap-2 px-4">
+              <Activity size={16} />
+              <span>Canvas</span>
+            </TabsTrigger>
+            <TabsTrigger value="rules" className="flex items-center gap-2 px-4">
+              <GitFork size={16} />
+              <span>Rule Engine</span>
+            </TabsTrigger>
+            <TabsTrigger value="recommendations" className="flex items-center gap-2 px-4">
+              <BookOpen size={16} />
+              <span>Recommendations</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
+        
+        <TabsContent value="canvas" className="flex-1 flex overflow-hidden p-0 border-none">
+          <ReactFlowProvider>
+            <WorkflowCanvas
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              onNodeClick={onNodeClick}
+              onPaneClick={() => setSelectedNode(null)}
+              onDragOver={onDragOver}
+              onDrop={onDrop}
+            />
+            <NodePanel
+              selectedNode={selectedNode}
+              onNodeSelect={setSelectedNode}
+              onNodeUpdate={onNodeUpdate}
+            />
+          </ReactFlowProvider>
+        </TabsContent>
+        
+        <TabsContent value="rules" className="flex-1 overflow-auto p-4 border-none">
+          <div className="grid gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">Rule Engine</CardTitle>
+                <CardDescription>
+                  Define business rules that control your workflow execution
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="rounded-md border p-4">
+                    <h3 className="font-medium mb-3 flex items-center gap-2">
+                      <Code size={18} className="text-primary" />
+                      <span>Condition Builder</span>
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Create rules with conditions that trigger actions in your workflow
+                    </p>
+                    
+                    <div className="bg-slate-50 p-4 rounded-md">
+                      <p className="text-sm text-center text-slate-500">
+                        Select a node from the canvas to define rules for that node
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="rounded-md border p-4">
+                    <h3 className="font-medium mb-3 flex items-center gap-2">
+                      <Settings size={18} className="text-primary" />
+                      <span>Rule Configuration</span>
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Configure how rules are evaluated and executed
+                    </p>
+                    
+                    <div className="bg-slate-50 p-4 rounded-md">
+                      <p className="text-sm text-center text-slate-500">
+                        No rule configurations yet. Rules will be added as you build your workflow.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="recommendations" className="flex-1 overflow-auto p-4 border-none">
+          <div className="grid gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">Workflow Recommendations</CardTitle>
+                <CardDescription>
+                  Get recommendations based on your workflow structure and content
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="rounded-md border p-4">
+                    <h3 className="font-medium mb-3 flex items-center gap-2">
+                      <BookOpen size={18} className="text-primary" />
+                      <span>Recommended Templates</span>
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      {recommendations.length > 0 ? (
+                        recommendations.map((template, index) => (
+                          <div 
+                            key={index} 
+                            className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                            onClick={() => applyTemplate(template.id)}
+                          >
+                            <div className="flex gap-3 items-center mb-2">
+                              <div className={`w-8 h-8 rounded-md flex items-center justify-center text-white bg-${template.color || 'primary'}`}>
+                                <i className={template.icon || 'ri-flow-chart'}></i>
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-sm">{template.name}</h4>
+                                <p className="text-xs text-gray-500">{template.nodeCount} nodes</p>
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-600">{template.description}</p>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="col-span-2 bg-slate-50 p-4 rounded-md">
+                          <p className="text-sm text-center text-slate-500">
+                            No recommendations available yet. Start building your workflow or click 
+                            <button 
+                              className="text-primary font-medium mx-1 hover:underline" 
+                              onClick={getRecommendations}
+                            >
+                              here
+                            </button>
+                            to get recommendations.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
       
       <RecommendationModal
         open={showRecommendations}

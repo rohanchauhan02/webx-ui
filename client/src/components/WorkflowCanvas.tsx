@@ -14,6 +14,8 @@ import ReactFlow, {
   getOutgoers,
   getIncomers,
   EdgeChange,
+  Handle,
+  Position,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { cn } from '@/lib/utils';
@@ -80,15 +82,20 @@ const CustomEdge = ({
   };
 
   // Adjust marker style if selected
-  let customMarkerEnd = markerEnd;
-  if (selected && markerEnd && typeof markerEnd === 'object') {
+  let customMarkerEnd: any = markerEnd;
+  if (selected && markerEnd) {
     // Create a new marker with the selected color
-    customMarkerEnd = {
-      type: markerEnd.type,
-      width: markerEnd.width,
-      height: markerEnd.height,
-      color: '#4F46E5',
-    };
+    // Handle both string and object type markers
+    if (typeof markerEnd === 'string') {
+      customMarkerEnd = markerEnd;
+    } else {
+      customMarkerEnd = {
+        type: MarkerType.ArrowClosed,
+        width: 15,
+        height: 15,
+        color: '#4F46E5',
+      };
+    }
   }
 
   return (
@@ -114,7 +121,23 @@ const nodeTypes = {
     };
 
     return (
-      <div className="px-4 py-3 rounded-lg bg-white border border-gray-200 shadow-sm w-44">
+      <div className="px-4 py-3 rounded-lg bg-white border border-gray-200 shadow-sm w-52 relative group">
+        {/* Input handle on the left */}
+        <Handle
+          type="target"
+          position={Position.Left}
+          className="w-3 h-3 bg-gray-300 opacity-0 group-hover:opacity-100 transition-opacity"
+          style={{ zIndex: 20 }}
+        />
+        
+        {/* Output handle on the right */}
+        <Handle
+          type="source"
+          position={Position.Right}
+          className="w-3 h-3 bg-gray-300 opacity-0 group-hover:opacity-100 transition-opacity"
+          style={{ zIndex: 20 }}
+        />
+        
         <div className="flex items-center mb-2">
           <div className={cn("w-8 h-8 rounded-md flex items-center justify-center mr-2", getColorClass(data.color))}>
             <i className={data.icon}></i>
