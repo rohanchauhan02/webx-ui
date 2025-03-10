@@ -569,16 +569,56 @@ const NodePanel = ({ selectedNode, onNodeSelect, onNodeUpdate }: NodePanelProps)
         case 'email': return renderEmailConfig();
         case 'slack': return renderSlackConfig();
         case 'telegram': return renderTelegramConfig();
+        case 'discord': return renderDiscordConfig();
+        case 'whatsapp': return renderWhatsAppConfig();
+        case 'sms': return defaultConfigMessage();
+        case 'push_notification': return defaultConfigMessage();
         
         // Project Management nodes
         case 'github': return renderGithubConfig();
+        case 'gitlab': return defaultConfigMessage();
+        case 'bitbucket': return defaultConfigMessage();
         case 'jira': return renderJiraConfig();
         case 'trello': return defaultConfigMessage();
+        case 'asana': return defaultConfigMessage();
+        case 'clickup': return defaultConfigMessage();
         
         // Cloud Service nodes
         case 's3': return defaultConfigMessage();
+        case 'lambda': return defaultConfigMessage();
+        case 'dynamodb': return defaultConfigMessage();
         case 'google_sheets': return renderGoogleSheetsConfig();
+        case 'google_drive': return defaultConfigMessage();
+        case 'google_calendar': return defaultConfigMessage();
+        case 'dropbox': return defaultConfigMessage();
+        case 'onedrive': return defaultConfigMessage();
+        
+        // Payments & Commerce nodes
         case 'stripe': return defaultConfigMessage();
+        case 'paypal': return defaultConfigMessage();
+        case 'shopify': return defaultConfigMessage();
+        case 'woocommerce': return defaultConfigMessage();
+        case 'square': return defaultConfigMessage();
+        
+        // CRM & Marketing nodes
+        case 'salesforce': return defaultConfigMessage();
+        case 'hubspot': return defaultConfigMessage();
+        case 'mailchimp': return defaultConfigMessage();
+        case 'sendgrid': return defaultConfigMessage();
+        case 'airtable': return defaultConfigMessage();
+        
+        // Social Media nodes
+        case 'twitter': return defaultConfigMessage();
+        case 'facebook': return defaultConfigMessage();
+        case 'instagram': return defaultConfigMessage();
+        case 'linkedin': return defaultConfigMessage();
+        case 'youtube': return defaultConfigMessage();
+        
+        // AI & ML nodes
+        case 'openai': return renderOpenAIConfig();
+        case 'bing_ai': return defaultConfigMessage();
+        case 'google_ai': return defaultConfigMessage();
+        case 'huggingface': return defaultConfigMessage();
         
         default: return defaultConfigMessage();
       }
@@ -1005,7 +1045,694 @@ const NodePanel = ({ selectedNode, onNodeSelect, onNodeUpdate }: NodePanelProps)
     );
   };
   
-  // Add other node config renders (e.g., S3, Stripe) as needed
+  const renderDiscordConfig = () => {
+    const config = selectedNode?.data.config || {};
+    
+    return (
+      <>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="webhookUrl">Webhook URL</Label>
+            <Input 
+              id="webhookUrl" 
+              value={config.webhookUrl || ""} 
+              onChange={(e) => handleConfigChange("webhookUrl", e.target.value)}
+              placeholder="https://discord.com/api/webhooks/..."
+              type="password"
+            />
+            <p className="text-xs text-gray-500 mt-1">Discord channel webhook URL</p>
+          </div>
+          
+          <div>
+            <Label htmlFor="username">Username</Label>
+            <Input 
+              id="username" 
+              value={config.username || ""} 
+              onChange={(e) => handleConfigChange("username", e.target.value)}
+              placeholder="Bot Name"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="avatar">Avatar URL (optional)</Label>
+            <Input 
+              id="avatar" 
+              value={config.avatar || ""} 
+              onChange={(e) => handleConfigChange("avatar", e.target.value)}
+              placeholder="https://example.com/avatar.png"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="content">Message Content</Label>
+            <Textarea 
+              id="content" 
+              value={config.content || ""} 
+              onChange={(e) => handleConfigChange("content", e.target.value)}
+              placeholder="Message to send..."
+              className="h-20"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="embedTitle">Embed Title (optional)</Label>
+            <Input 
+              id="embedTitle" 
+              value={config.embedTitle || ""} 
+              onChange={(e) => handleConfigChange("embedTitle", e.target.value)}
+              placeholder="Embed Title"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="embedDescription">Embed Description (optional)</Label>
+            <Textarea 
+              id="embedDescription" 
+              value={config.embedDescription || ""} 
+              onChange={(e) => handleConfigChange("embedDescription", e.target.value)}
+              placeholder="Embed description text..."
+              className="h-16"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="embedColor">Embed Color (optional)</Label>
+            <Input 
+              id="embedColor" 
+              value={config.embedColor || "#5865F2"} 
+              onChange={(e) => handleConfigChange("embedColor", e.target.value)}
+              placeholder="#5865F2"
+            />
+            <p className="text-xs text-gray-500 mt-1">Hex color code for embed</p>
+          </div>
+        </div>
+      </>
+    );
+  };
+  
+  const renderWhatsAppConfig = () => {
+    const config = selectedNode?.data.config || {};
+    
+    return (
+      <>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="apiKey">API Key</Label>
+            <Input 
+              id="apiKey" 
+              value={config.apiKey || ""} 
+              onChange={(e) => handleConfigChange("apiKey", e.target.value)}
+              placeholder="Your WhatsApp Business API Key"
+              type="password"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="phoneId">Phone Number ID</Label>
+            <Input 
+              id="phoneId" 
+              value={config.phoneId || ""} 
+              onChange={(e) => handleConfigChange("phoneId", e.target.value)}
+              placeholder="Your registered phone number ID"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="recipient">Recipient Number</Label>
+            <Input 
+              id="recipient" 
+              value={config.recipient || ""} 
+              onChange={(e) => handleConfigChange("recipient", e.target.value)}
+              placeholder="+1234567890 or {{ data.phone }}"
+            />
+            <p className="text-xs text-gray-500 mt-1">Include country code, use {{ }} for dynamic values</p>
+          </div>
+          
+          <div>
+            <Label htmlFor="messageType">Message Type</Label>
+            <Select 
+              value={config.messageType || "text"} 
+              onValueChange={(value) => handleConfigChange("messageType", value)}
+            >
+              <SelectTrigger id="messageType">
+                <SelectValue placeholder="Select message type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="text">Text Message</SelectItem>
+                <SelectItem value="template">Template Message</SelectItem>
+                <SelectItem value="media">Media Message</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {config.messageType === "text" && (
+            <div>
+              <Label htmlFor="message">Message Text</Label>
+              <Textarea 
+                id="message" 
+                value={config.message || ""} 
+                onChange={(e) => handleConfigChange("message", e.target.value)}
+                placeholder="Your message content..."
+                className="h-24"
+              />
+            </div>
+          )}
+          
+          {config.messageType === "template" && (
+            <>
+              <div>
+                <Label htmlFor="templateName">Template Name</Label>
+                <Input 
+                  id="templateName" 
+                  value={config.templateName || ""} 
+                  onChange={(e) => handleConfigChange("templateName", e.target.value)}
+                  placeholder="your_template_name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="templateParameters">Template Parameters (JSON)</Label>
+                <Textarea 
+                  id="templateParameters" 
+                  value={config.templateParameters || "[]"} 
+                  onChange={(e) => handleConfigChange("templateParameters", e.target.value)}
+                  placeholder='[{"type":"text","text":"Hello there!"}]'
+                  className="font-mono text-sm h-24"
+                />
+              </div>
+            </>
+          )}
+          
+          {config.messageType === "media" && (
+            <>
+              <div>
+                <Label htmlFor="mediaType">Media Type</Label>
+                <Select 
+                  value={config.mediaType || "image"} 
+                  onValueChange={(value) => handleConfigChange("mediaType", value)}
+                >
+                  <SelectTrigger id="mediaType">
+                    <SelectValue placeholder="Select media type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="image">Image</SelectItem>
+                    <SelectItem value="document">Document</SelectItem>
+                    <SelectItem value="audio">Audio</SelectItem>
+                    <SelectItem value="video">Video</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="mediaUrl">Media URL</Label>
+                <Input 
+                  id="mediaUrl" 
+                  value={config.mediaUrl || ""} 
+                  onChange={(e) => handleConfigChange("mediaUrl", e.target.value)}
+                  placeholder="https://example.com/media.jpg"
+                />
+              </div>
+              <div>
+                <Label htmlFor="caption">Caption (optional)</Label>
+                <Input 
+                  id="caption" 
+                  value={config.caption || ""} 
+                  onChange={(e) => handleConfigChange("caption", e.target.value)}
+                  placeholder="Image description"
+                />
+              </div>
+            </>
+          )}
+        </div>
+      </>
+    );
+  };
+  
+  const renderOpenAIConfig = () => {
+    const config = selectedNode?.data.config || {};
+    
+    return (
+      <>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="apiKey">API Key</Label>
+            <Input 
+              id="apiKey" 
+              value={config.apiKey || ""} 
+              onChange={(e) => handleConfigChange("apiKey", e.target.value)}
+              placeholder="Your OpenAI API Key"
+              type="password"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="model">Model</Label>
+            <Select 
+              value={config.model || "gpt-4-turbo"} 
+              onValueChange={(value) => handleConfigChange("model", value)}
+            >
+              <SelectTrigger id="model">
+                <SelectValue placeholder="Select model" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
+                <SelectItem value="gpt-4">GPT-4</SelectItem>
+                <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                <SelectItem value="text-davinci-003">Davinci</SelectItem>
+                <SelectItem value="dall-e-3">DALL-E 3</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="requestType">Request Type</Label>
+            <Select 
+              value={config.requestType || "completion"} 
+              onValueChange={(value) => handleConfigChange("requestType", value)}
+            >
+              <SelectTrigger id="requestType">
+                <SelectValue placeholder="Select request type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="completion">Text Completion</SelectItem>
+                <SelectItem value="chat">Chat Completion</SelectItem>
+                <SelectItem value="image">Image Generation</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {(config.requestType === "completion" || config.requestType === "chat") && (
+            <>
+              <div>
+                <Label htmlFor="prompt">Prompt</Label>
+                <Textarea 
+                  id="prompt" 
+                  value={config.prompt || ""} 
+                  onChange={(e) => handleConfigChange("prompt", e.target.value)}
+                  placeholder="Enter your prompt here..."
+                  className="h-24"
+                />
+                <p className="text-xs text-gray-500 mt-1">Use {`{${'{'}data.variable}`} for dynamic content</p>
+              </div>
+              
+              <div>
+                <Label htmlFor="temperature">Temperature</Label>
+                <div className="flex items-center">
+                  <Input 
+                    id="temperature" 
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={config.temperature || 0.7} 
+                    onChange={(e) => handleConfigChange("temperature", Number(e.target.value))}
+                    className="w-full"
+                  />
+                  <span className="ml-2 text-sm font-mono">{config.temperature || 0.7}</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Lower for deterministic results, higher for creativity</p>
+              </div>
+              
+              <div>
+                <Label htmlFor="maxTokens">Max Tokens</Label>
+                <Input 
+                  id="maxTokens" 
+                  type="number" 
+                  value={config.maxTokens || 500} 
+                  onChange={(e) => handleConfigChange("maxTokens", Number(e.target.value))}
+                />
+              </div>
+            </>
+          )}
+          
+          {config.requestType === "image" && (
+            <>
+              <div>
+                <Label htmlFor="imagePrompt">Image Prompt</Label>
+                <Textarea 
+                  id="imagePrompt" 
+                  value={config.imagePrompt || ""} 
+                  onChange={(e) => handleConfigChange("imagePrompt", e.target.value)}
+                  placeholder="Describe the image you want to generate..."
+                  className="h-24"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="imageSize">Image Size</Label>
+                <Select 
+                  value={config.imageSize || "1024x1024"} 
+                  onValueChange={(value) => handleConfigChange("imageSize", value)}
+                >
+                  <SelectTrigger id="imageSize">
+                    <SelectValue placeholder="Select image size" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="256x256">256x256</SelectItem>
+                    <SelectItem value="512x512">512x512</SelectItem>
+                    <SelectItem value="1024x1024">1024x1024</SelectItem>
+                    <SelectItem value="1792x1024">1792x1024 (landscape)</SelectItem>
+                    <SelectItem value="1024x1792">1024x1792 (portrait)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="imageQuality">Image Quality</Label>
+                <Select 
+                  value={config.imageQuality || "standard"} 
+                  onValueChange={(value) => handleConfigChange("imageQuality", value)}
+                >
+                  <SelectTrigger id="imageQuality">
+                    <SelectValue placeholder="Select image quality" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="standard">Standard</SelectItem>
+                    <SelectItem value="hd">HD</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
+          
+          <div>
+            <Label htmlFor="outputMapping">Output Mapping</Label>
+            <Input 
+              id="outputMapping" 
+              value={config.outputMapping || "response"} 
+              onChange={(e) => handleConfigChange("outputMapping", e.target.value)}
+              placeholder="response"
+            />
+            <p className="text-xs text-gray-500 mt-1">Variable name to store the output</p>
+          </div>
+        </div>
+      </>
+    );
+  };
+  
+  const renderManualTriggerConfig = () => {
+    const config = selectedNode?.data.config || {};
+    
+    return (
+      <>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="triggerName">Trigger Name</Label>
+            <Input 
+              id="triggerName" 
+              value={config.triggerName || ""} 
+              onChange={(e) => handleConfigChange("triggerName", e.target.value)}
+              placeholder="My Manual Trigger"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea 
+              id="description" 
+              value={config.description || ""} 
+              onChange={(e) => handleConfigChange("description", e.target.value)}
+              placeholder="Description of what this trigger does..."
+              className="h-20"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="inputs">Input Parameters (JSON)</Label>
+            <Textarea 
+              id="inputs" 
+              value={config.inputs || "[]"} 
+              onChange={(e) => handleConfigChange("inputs", e.target.value)}
+              placeholder='[{"name":"email","type":"string","required":true}]'
+              className="font-mono text-sm h-24"
+            />
+            <p className="text-xs text-gray-500 mt-1">Define parameters that must be provided when triggered</p>
+          </div>
+        </div>
+      </>
+    );
+  };
+  
+  const renderApiTriggerConfig = () => {
+    const config = selectedNode?.data.config || {};
+    
+    return (
+      <>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="endpointPath">Endpoint Path</Label>
+            <Input 
+              id="endpointPath" 
+              value={config.endpointPath || ""} 
+              onChange={(e) => handleConfigChange("endpointPath", e.target.value)}
+              placeholder="/api/trigger/my-endpoint"
+            />
+            <p className="text-xs text-gray-500 mt-1">API path to trigger this workflow</p>
+          </div>
+          
+          <div>
+            <Label htmlFor="method">HTTP Method</Label>
+            <Select 
+              value={config.method || "POST"} 
+              onValueChange={(value) => handleConfigChange("method", value)}
+            >
+              <SelectTrigger id="method">
+                <SelectValue placeholder="Select HTTP method" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="GET">GET</SelectItem>
+                <SelectItem value="POST">POST</SelectItem>
+                <SelectItem value="PUT">PUT</SelectItem>
+                <SelectItem value="DELETE">DELETE</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="authentication">Authentication</Label>
+            <Select 
+              value={config.authentication || "none"} 
+              onValueChange={(value) => handleConfigChange("authentication", value)}
+            >
+              <SelectTrigger id="authentication">
+                <SelectValue placeholder="Select authentication type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="apiKey">API Key</SelectItem>
+                <SelectItem value="bearer">Bearer Token</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {config.authentication === "apiKey" && (
+            <div>
+              <Label htmlFor="apiKey">API Key</Label>
+              <Input 
+                id="apiKey" 
+                value={config.apiKey || ""} 
+                onChange={(e) => handleConfigChange("apiKey", e.target.value)}
+                placeholder="Your API key"
+                type="password"
+              />
+            </div>
+          )}
+          
+          {config.authentication === "bearer" && (
+            <div>
+              <Label htmlFor="bearerToken">Bearer Token</Label>
+              <Input 
+                id="bearerToken" 
+                value={config.bearerToken || ""} 
+                onChange={(e) => handleConfigChange("bearerToken", e.target.value)}
+                placeholder="Your bearer token"
+                type="password"
+              />
+            </div>
+          )}
+          
+          <div>
+            <Label htmlFor="requestSchema">Request Schema (JSON)</Label>
+            <Textarea 
+              id="requestSchema" 
+              value={config.requestSchema || "{}"} 
+              onChange={(e) => handleConfigChange("requestSchema", e.target.value)}
+              placeholder='{"type":"object","properties":{"name":{"type":"string"}}}'
+              className="font-mono text-sm h-24"
+            />
+            <p className="text-xs text-gray-500 mt-1">JSON Schema for validating incoming requests</p>
+          </div>
+        </div>
+      </>
+    );
+  };
+  
+  const renderApiCallConfig = () => {
+    const config = selectedNode?.data.config || {};
+    
+    return (
+      <>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="url">URL</Label>
+            <Input 
+              id="url" 
+              value={config.url || ""} 
+              onChange={(e) => handleConfigChange("url", e.target.value)}
+              placeholder="https://api.example.com/endpoint"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="method">Method</Label>
+            <Select 
+              value={config.method || "GET"} 
+              onValueChange={(value) => handleConfigChange("method", value)}
+            >
+              <SelectTrigger id="method">
+                <SelectValue placeholder="Select HTTP method" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="GET">GET</SelectItem>
+                <SelectItem value="POST">POST</SelectItem>
+                <SelectItem value="PUT">PUT</SelectItem>
+                <SelectItem value="PATCH">PATCH</SelectItem>
+                <SelectItem value="DELETE">DELETE</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="headers">Headers (JSON)</Label>
+            <Textarea 
+              id="headers" 
+              value={config.headers || "{\n  \"Content-Type\": \"application/json\"\n}"} 
+              onChange={(e) => handleConfigChange("headers", e.target.value)}
+              placeholder='{"Content-Type": "application/json"}'
+              className="font-mono text-sm h-20"
+            />
+          </div>
+          
+          {(config.method === "POST" || config.method === "PUT" || config.method === "PATCH") && (
+            <div>
+              <Label htmlFor="body">Request Body (JSON)</Label>
+              <Textarea 
+                id="body" 
+                value={config.body || "{}"} 
+                onChange={(e) => handleConfigChange("body", e.target.value)}
+                placeholder='{"key": "value"}'
+                className="font-mono text-sm h-24"
+              />
+              <p className="text-xs text-gray-500 mt-1">Use {`{${'{'}data.variable}`} for dynamic values</p>
+            </div>
+          )}
+          
+          <div>
+            <Label htmlFor="auth">Authentication</Label>
+            <Select 
+              value={config.auth || "none"} 
+              onValueChange={(value) => handleConfigChange("auth", value)}
+            >
+              <SelectTrigger id="auth">
+                <SelectValue placeholder="Select authentication type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="basic">Basic Auth</SelectItem>
+                <SelectItem value="bearer">Bearer Token</SelectItem>
+                <SelectItem value="apiKey">API Key</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {config.auth === "basic" && (
+            <>
+              <div>
+                <Label htmlFor="username">Username</Label>
+                <Input 
+                  id="username" 
+                  value={config.username || ""} 
+                  onChange={(e) => handleConfigChange("username", e.target.value)}
+                  placeholder="Username"
+                />
+              </div>
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input 
+                  id="password" 
+                  value={config.password || ""} 
+                  onChange={(e) => handleConfigChange("password", e.target.value)}
+                  placeholder="Password"
+                  type="password"
+                />
+              </div>
+            </>
+          )}
+          
+          {config.auth === "bearer" && (
+            <div>
+              <Label htmlFor="token">Bearer Token</Label>
+              <Input 
+                id="token" 
+                value={config.token || ""} 
+                onChange={(e) => handleConfigChange("token", e.target.value)}
+                placeholder="Bearer token"
+                type="password"
+              />
+            </div>
+          )}
+          
+          {config.auth === "apiKey" && (
+            <>
+              <div>
+                <Label htmlFor="apiKeyName">API Key Name</Label>
+                <Input 
+                  id="apiKeyName" 
+                  value={config.apiKeyName || ""} 
+                  onChange={(e) => handleConfigChange("apiKeyName", e.target.value)}
+                  placeholder="X-API-Key"
+                />
+              </div>
+              <div>
+                <Label htmlFor="apiKeyValue">API Key Value</Label>
+                <Input 
+                  id="apiKeyValue" 
+                  value={config.apiKeyValue || ""} 
+                  onChange={(e) => handleConfigChange("apiKeyValue", e.target.value)}
+                  placeholder="your-api-key"
+                  type="password"
+                />
+              </div>
+              <div>
+                <Label htmlFor="apiKeyPlacement">API Key Placement</Label>
+                <Select 
+                  value={config.apiKeyPlacement || "header"} 
+                  onValueChange={(value) => handleConfigChange("apiKeyPlacement", value)}
+                >
+                  <SelectTrigger id="apiKeyPlacement">
+                    <SelectValue placeholder="Select placement" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="header">Header</SelectItem>
+                    <SelectItem value="query">Query Parameter</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
+          
+          <div>
+            <Label htmlFor="responseMapping">Response Mapping</Label>
+            <Input 
+              id="responseMapping" 
+              value={config.responseMapping || "data"} 
+              onChange={(e) => handleConfigChange("responseMapping", e.target.value)}
+              placeholder="data"
+            />
+            <p className="text-xs text-gray-500 mt-1">Path to extract from response (e.g., data.results)</p>
+          </div>
+        </div>
+      </>
+    );
+  };
 
   return (
     <div className="w-64 bg-white border-l border-gray-200 overflow-y-auto flex flex-col h-full">
