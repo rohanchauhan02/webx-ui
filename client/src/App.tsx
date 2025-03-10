@@ -64,31 +64,29 @@ import Dashboard from "@/pages/dashboard";
 import WorkflowEditor from "@/pages/workflow-editor";
 import ExecutionHistory from "@/pages/execution-history";
 import Layout from "@/components/Layout";
-import { useTheme } from "@/components/ThemeProvider";
+import DarkModeToggle from "@/components/DarkModeToggle"; //Import toggle
 
-// DarkModeToggle component
-const DarkModeToggle = () => {
-  const { theme, toggleTheme } = useTheme();
-
+function Router() {
   return (
-    <button onClick={toggleTheme}>
-      {theme === "dark" ? 'Light Mode' : 'Dark Mode'}
-    </button>
+    <Switch>
+      <Route path="/" component={Dashboard} />
+      <Route path="/workflows/:id" component={WorkflowEditor} />
+      <Route path="/workflows/new" component={WorkflowEditor} />
+      <Route path="/history" component={ExecutionHistory} />
+      <Route component={NotFound} />
+    </Switch>
   );
-};
+}
 
-// Main App component
 function App() {
   return (
-    <Layout>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/workflow-editor" component={WorkflowEditor} />
-        <Route path="/execution-history" component={ExecutionHistory} />
-        <Route component={NotFound} />
-      </Switch>
+    <>
+      <Layout>
+        <Router />
+        <DarkModeToggle /> {/* Add toggle */}
+      </Layout>
       <Toaster />
-    </Layout>
+    </>
   );
 }
 
