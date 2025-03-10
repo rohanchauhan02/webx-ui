@@ -6,6 +6,8 @@ import { queryClient } from "./lib/queryClient";
 
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
-    <App />
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
   </QueryClientProvider>
 );
