@@ -57,36 +57,39 @@ export default DarkModeToggle;
 
 
 // Update App.js to include the toggle
-import { Switch, Route } from "wouter";
-import { Toaster } from "@/components/ui/toaster";
-import NotFound from "@/pages/not-found";
-import Dashboard from "@/pages/dashboard";
-import WorkflowEditor from "@/pages/workflow-editor";
-import ExecutionHistory from "@/pages/execution-history";
-import Layout from "@/components/Layout";
-import DarkModeToggle from "@/components/DarkModeToggle"; //Import toggle
+import { Switch, Route } from 'wouter';
+import Dashboard from '@/pages/dashboard';
+import WorkflowEditor from '@/pages/workflow-editor';
+import ExecutionHistory from '@/pages/execution-history';
+import Layout from '@/components/Layout';
+import { Toaster } from '@/components/ui/toast';
+import NotFound from '@/pages/not-found';
 
-function Router() {
+// DarkModeToggle component
+const DarkModeToggle2 = () => {
+  const { theme, toggleTheme } = useTheme();
+
   return (
-    <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/workflows/:id" component={WorkflowEditor} />
-      <Route path="/workflows/new" component={WorkflowEditor} />
-      <Route path="/history" component={ExecutionHistory} />
-      <Route component={NotFound} />
-    </Switch>
+    <button onClick={toggleTheme}>
+      {theme === "dark" ? 'Light Mode' : 'Dark Mode'}
+    </button>
   );
-}
+};
 
+// Main App component
 function App() {
   return (
-    <>
-      <Layout>
-        <Router />
-        <DarkModeToggle /> {/* Add toggle */}
-      </Layout>
-      <Toaster />
-    </>
+    <Layout>
+        <Switch>
+          <Route path="/" component={Dashboard} />
+          <Route path="/workflows/:id" component={WorkflowEditor} />
+          <Route path="/workflows/new" component={WorkflowEditor} />
+          <Route path="/history" component={ExecutionHistory} />
+          <Route component={NotFound} />
+        </Switch>
+        <Toaster />
+        <DarkModeToggle />
+    </Layout>
   );
 }
 
