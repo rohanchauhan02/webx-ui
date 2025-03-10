@@ -17,7 +17,19 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { cn } from '@/lib/utils';
-import { Plus, ChevronDown } from 'lucide-react';
+import { 
+  Plus, 
+  ChevronDown, 
+  Zap, 
+  GitBranch, 
+  Database, 
+  MessageSquare, 
+  Settings, 
+  Cloud,
+  Pencil,
+  Trash2,
+  Copy
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -92,6 +104,89 @@ const WorkflowCanvas = ({
 }: WorkflowCanvasProps) => {
   const reactFlowInstance = useReactFlow();
   const edgeUpdateSuccessful = useRef(true);
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
+  const [edgeMenuPosition, setEdgeMenuPosition] = useState<{ x: number; y: number } | null>(null);
+  
+  // Update selected node when a node is clicked
+  const handleNodeClick = (node: Node) => {
+    setSelectedNode(node);
+    setSelectedEdge(null); // Deselect any edge
+    setEdgeMenuPosition(null);
+    onNodeClick(node);
+  };
+  
+  // Handle edge click for showing edge context menu
+  const handleEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
+    event.stopPropagation();
+    const rect = (event.target as Element).getBoundingClientRect();
+    const centerX = (rect.left + rect.right) / 2;
+    const centerY = (rect.top + rect.bottom) / 2;
+    
+    // Convert screen coordinates to flow coordinates
+    const position = reactFlowInstance.screenToFlowPosition({
+      x: centerX,
+      y: centerY,
+    });
+    
+    setSelectedEdge(edge);
+    setSelectedNode(null); // Deselect any node
+    setEdgeMenuPosition(position);
+  }, [reactFlowInstance]);
+  
+  // Function to add a node in the middle of an edge
+  const handleAddNodeBetween = useCallback((nodeType: any) => {
+    if (!selectedEdge || !edgeMenuPosition) return;
+    
+    // Create a new node
+    const newNodeId = `node_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    const newNode = {
+      id: newNodeId,
+      type: 'custom',
+      position: edgeMenuPosition,
+      data: {
+        label: nodeType.name,
+        type: nodeType.type,
+        subtype: nodeType.subtype,
+        icon: nodeType.icon,
+        color: nodeType.color,
+        config: {},
+      },
+    };
+    
+    // Create two new edges: source -> new node and new node -> target
+    const sourceToNewEdge = {
+      id: `edge_${Date.now()}_1`,
+      source: selectedEdge.source,
+      target: newNodeId,
+      // Copy any style properties from the original edge
+      style: selectedEdge.style,
+      markerEnd: selectedEdge.markerEnd,
+      animated: selectedEdge.animated,
+    };
+    
+    const newToTargetEdge = {
+      id: `edge_${Date.now()}_2`,
+      source: newNodeId,
+      target: selectedEdge.target,
+      // Copy any style properties from the original edge
+      style: selectedEdge.style,
+      markerEnd: selectedEdge.markerEnd,
+      animated: selectedEdge.animated,
+    };
+    
+    // Add the new node and edges, remove the old edge
+    onNodesChange([{ type: 'add', item: newNode }]);
+    onEdgesChange([
+      { type: 'remove', id: selectedEdge.id },
+      { type: 'add', item: sourceToNewEdge },
+      { type: 'add', item: newToTargetEdge },
+    ]);
+    
+    // Clear the selection
+    setSelectedEdge(null);
+    setEdgeMenuPosition(null);
+  }, [selectedEdge, edgeMenuPosition, onNodesChange, onEdgesChange]);
 
   const onEdgeUpdateStart = useCallback(() => {
     edgeUpdateSuccessful.current = false;
@@ -160,8 +255,11 @@ const WorkflowCanvas = ({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        onNodeClick={(_, node) => onNodeClick(node)}
-        onPaneClick={onPaneClick}
+        onNodeClick={(_, node) => handleNodeClick(node)}
+        onPaneClick={() => {
+          setSelectedNode(null);
+          onPaneClick();
+        }}
         nodeTypes={nodeTypes}
         onEdgeUpdate={onEdgeUpdate}
         onEdgeUpdateStart={onEdgeUpdateStart}
@@ -178,39 +276,114 @@ const WorkflowCanvas = ({
           animated: true,
         }}
       >
+        {/* Add Node Button */}
         <Panel position="bottom-right" className="mb-10 mr-5">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="icon" className="rounded-full shadow-lg h-14 w-14 bg-primary hover:bg-primary/90">
-                <Plus className="h-6 w-6" />
+              <Button 
+                size="icon" 
+                className="rounded-full shadow-lg h-14 w-14 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all duration-300 transform hover:scale-105"
+              >
+                <Plus className="h-6 w-6 text-white" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-64 p-2 max-h-[70vh] overflow-y-auto">
               {nodeCategories.map((category) => (
-                <div key={category.name} className="px-2 py-1.5">
-                  <div className="font-medium text-sm mb-1.5">{category.name}</div>
-                  {category.items.slice(0, 4).map((item) => (
-                    <DropdownMenuItem
-                      key={item.name}
-                      className="flex items-center cursor-pointer"
-                      onClick={() => handleAddNode(item)}
-                    >
-                      <div className={cn("w-6 h-6 rounded flex items-center justify-center mr-2", 
-                        item.color === 'blue' ? 'bg-blue-100 text-blue-600' :
-                        item.color === 'orange' ? 'bg-orange-100 text-orange-600' :
-                        item.color === 'purple' ? 'bg-purple-100 text-purple-600' :
-                        item.color === 'green' ? 'bg-green-100 text-green-600' :
-                        'bg-gray-100 text-gray-600'
-                      )}>
-                        <i className={item.icon} style={{ fontSize: '12px' }}></i>
-                      </div>
-                      <span className="text-sm">{item.name}</span>
-                    </DropdownMenuItem>
-                  ))}
+                <div key={category.name} className="mb-3">
+                  <div className="font-medium text-sm mb-2 px-2 text-gray-700 flex items-center">
+                    {category.name === "Triggers" && <Zap className="h-3 w-3 mr-1.5 text-blue-500" />}
+                    {category.name === "Logic" && <GitBranch className="h-3 w-3 mr-1.5 text-orange-500" />}
+                    {category.name === "API & Data" && <Database className="h-3 w-3 mr-1.5 text-green-500" />}
+                    {category.name === "Communication" && <MessageSquare className="h-3 w-3 mr-1.5 text-purple-500" />}
+                    {category.name === "Project Tools" && <Settings className="h-3 w-3 mr-1.5 text-gray-500" />}
+                    {category.name === "Cloud Services" && <Cloud className="h-3 w-3 mr-1.5 text-blue-400" />}
+                    {category.name}
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 px-1">
+                    {category.items.map((item) => (
+                      <DropdownMenuItem
+                        key={item.name}
+                        className="flex items-center cursor-pointer px-2 py-1.5 rounded-md hover:bg-gray-100"
+                        onClick={() => handleAddNode(item)}
+                      >
+                        <div className={cn("w-6 h-6 rounded-md flex items-center justify-center mr-2", 
+                          item.color === 'blue' ? 'bg-blue-100 text-blue-600' :
+                          item.color === 'orange' ? 'bg-orange-100 text-orange-600' :
+                          item.color === 'purple' ? 'bg-purple-100 text-purple-600' :
+                          item.color === 'green' ? 'bg-green-100 text-green-600' :
+                          item.color === 'yellow' ? 'bg-yellow-100 text-yellow-600' :
+                          item.color === 'gray' ? 'bg-gray-800 text-white' :
+                          'bg-gray-100 text-gray-600'
+                        )}>
+                          <i className={item.icon} style={{ fontSize: '12px' }}></i>
+                        </div>
+                        <span className="text-xs font-medium whitespace-nowrap overflow-hidden text-ellipsis">{item.name}</span>
+                      </DropdownMenuItem>
+                    ))}
+                  </div>
                 </div>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+        </Panel>
+        
+        {/* Node Context Menu for Edit/View/Delete */}
+        <Panel position="top-right" className="mr-5 mt-5">
+          <div className="flex flex-col gap-2">
+            {selectedNode && (
+              <>
+                <Button 
+                  size="icon" 
+                  variant="outline" 
+                  className="h-9 w-9 rounded-full border-gray-200 bg-white shadow-sm"
+                  onClick={() => {
+                    // TODO: Implement node edit logic
+                    onNodeClick(selectedNode);
+                  }}
+                  title="Edit Node"
+                >
+                  <Pencil className="h-4 w-4 text-gray-600" />
+                </Button>
+                <Button 
+                  size="icon" 
+                  variant="outline" 
+                  className="h-9 w-9 rounded-full border-gray-200 bg-white shadow-sm"
+                  onClick={() => {
+                    // Delete node function
+                    // TODO: Add confirmation dialog
+                    onNodesChange([{
+                      type: 'remove',
+                      id: selectedNode.id,
+                    }]);
+                    onPaneClick(); // Deselect after deletion
+                  }}
+                  title="Delete Node"
+                >
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                </Button>
+                <Button 
+                  size="icon" 
+                  variant="outline" 
+                  className="h-9 w-9 rounded-full border-gray-200 bg-white shadow-sm"
+                  onClick={() => {
+                    // Duplicate node function
+                    const newNode = {
+                      ...selectedNode,
+                      id: `node_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                      position: {
+                        x: selectedNode.position.x + 50,
+                        y: selectedNode.position.y + 50,
+                      },
+                    };
+                    onNodesChange([{ type: 'add', item: newNode }]);
+                  }}
+                  title="Duplicate Node"
+                >
+                  <Copy className="h-4 w-4 text-gray-600" />
+                </Button>
+              </>
+            )}
+          </div>
         </Panel>
         <Controls />
         <Background gap={20} size={1} color="#CBD5E0" />
