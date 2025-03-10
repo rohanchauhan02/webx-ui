@@ -547,16 +547,51 @@ const NodePanel = ({ selectedNode, onNodeSelect, onNodeUpdate }: NodePanelProps)
       const { subtype } = selectedNode.data;
       
       switch (subtype) {
-        case 'email': return renderEmailConfig();
-        case 'webhook': return renderWebhookConfig();
+        // Trigger nodes
         case 'schedule': return renderScheduleConfig();
+        case 'webhook': return renderWebhookConfig();
+        case 'manual': return renderManualTriggerConfig ? renderManualTriggerConfig() : defaultConfigMessage();
+        case 'api': return renderApiTriggerConfig ? renderApiTriggerConfig() : defaultConfigMessage();
+        
+        // Logic nodes
         case 'condition': return renderConditionConfig();
+        case 'switch': return renderSwitchConfig ? renderSwitchConfig() : defaultConfigMessage();
         case 'loop': return renderLoopConfig();
+        case 'delay': return renderDelayConfig ? renderDelayConfig() : defaultConfigMessage();
+        
+        // API & Data nodes
+        case 'api_call': return renderApiCallConfig ? renderApiCallConfig() : defaultConfigMessage();
+        case 'transform': return renderTransformConfig ? renderTransformConfig() : defaultConfigMessage();
+        case 'json': return renderJsonConfig ? renderJsonConfig() : defaultConfigMessage();
         case 'database': return renderDatabaseConfig();
+        
+        // Communication nodes
+        case 'email': return renderEmailConfig();
         case 'slack': return renderSlackConfig();
-        default: return <div className="text-sm text-gray-500">No configuration available for this node type.</div>;
+        case 'telegram': return renderTelegramConfig ? renderTelegramConfig() : defaultConfigMessage();
+        
+        // Project Management nodes
+        case 'github': return renderGithubConfig ? renderGithubConfig() : defaultConfigMessage();
+        case 'jira': return renderJiraConfig ? renderJiraConfig() : defaultConfigMessage();
+        case 'trello': return renderTrelloConfig ? renderTrelloConfig() : defaultConfigMessage();
+        
+        // Cloud Service nodes
+        case 's3': return renderS3Config ? renderS3Config() : defaultConfigMessage();
+        case 'google_sheets': return renderGoogleSheetsConfig ? renderGoogleSheetsConfig() : defaultConfigMessage();
+        case 'stripe': return renderStripeConfig ? renderStripeConfig() : defaultConfigMessage();
+        
+        default: return defaultConfigMessage();
       }
     };
+    
+    const defaultConfigMessage = () => (
+      <div className="text-sm text-gray-500 p-4 bg-gray-50 rounded-md border border-gray-100">
+        <p>Configuration for this node type will be available soon.</p>
+        <p className="mt-2 text-xs">
+          <span className="font-semibold">TODO:</span> Backend integration needed for {selectedNode.data.subtype} node type.
+        </p>
+      </div>
+    );
     
     return (
       <div className="p-4 flex-1 overflow-y-auto">
